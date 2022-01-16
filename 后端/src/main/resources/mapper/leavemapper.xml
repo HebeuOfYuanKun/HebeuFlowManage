@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间，xml文件和dao借口对接起来 -->
+<mapper namespace="com.yuankun.mapper.LeaveMapper">
+    <select id="FindAllFeatue" resultMap="FeatureBean">
+        select * from feature
+    </select>
+    <resultMap id="FeatureBean" type="Feature">
+        <!--<collection property="Feature" javaType="list">-->
+        <id column="id"></id>
+            <result column="type" property="type"/>
+            <association property="Properties" javaType="Property" resultMap="Properties"></association>
+            <association property="geometry" javaType="Geometry" resultMap="geometry"></association>
+        <!--</collection>-->
+    </resultMap>
+    <resultMap id="Properties" type="Property">
+        <result column="property_type" property="Type"></result>
+        <result column="property_ratio" property="Ratio"></result>
+        <result column="property_linewidthratio" property="LineWidthRatio"></result>
+    </resultMap>
+    <resultMap id="geometry" type="Geometry">
+        <result column="geometry_type" property="Type"></result>
+        <!--<result column="geometry_coordinates"  property="Coordinates"></result>-->
+    </resultMap>
+    <select id="FindAllLeaveRecord" parameterType="Map" resultType="LeaveRecord">
+        select * from `leave`,student
+        <where>
+            <if test="Name!=null and Name!=''">and student.name like concat('%',#{Name},'%') </if>
+            <if test="Id!=null and Id!=''">and `leave`.student_id = #{Id} </if>
+            <if test="Examine!=null and Examine!=''">and `leave`.Examine like concat('%',#{Examine},'%') </if>
+            and `leave`.student_id=student.id
+        </where>
+        limit #{start},#{end}
+    </select>
+    <select id="FindAllLeaveRecordCount" parameterType="String" resultType="Integer">
+        select count(*) from `leave`,student
+        <where>
+            <!--<if test="Name!=null and Name!=''">name like concat ('%',#{Name},'%') </if>-->
+            <if test="Name!=null and Name!=''">and student.name like concat('%',#{Name},'%') </if>
+            <if test="Id!=null and Id!=''">and `leave`.student_id =#{Id}</if>
+            <if test="Examine!=null and Examine!=''">and `leave`.examine like concat('%',#{Examine},'%') </if>
+            and `leave`.student_id=student.id
+        </where>
+    </select>
+    <insert id="AddExamine" parameterType="Examine" useGeneratedKeys="true" keyProperty="id">
+        insert `leave` (student_id,startdate,enddate,destination,reason,remark,examine) values
+        (#{student_id},#{startdate},#{enddate},#{destination},#{reason},#{remark},'未审批')
+    </insert>
+    <delete id="DeleteLeave" >
+        delete from `leave` where id in
+        <foreach collection="array" item="estateId"
+                 open="(" close=")" separator=",">
+            #{estateId}
+        </foreach>
+    </delete>
+    <insert id="AddFeature" parameterType="Map">
+        insert `feature` (leave_id,type,property_type,property_ratio,property_linewidthratio,geometry_type,geometry_coordinates) values
+        (#{leave_id},'Feature',0,0,1,'LineString',#{location})
+    </insert>
+</mapper>

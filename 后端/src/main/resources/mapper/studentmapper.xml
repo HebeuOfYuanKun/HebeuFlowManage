@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间，xml文件和dao借口对接起来 -->
+<mapper namespace="com.yuankun.mapper.StudentMapper">
+    <select id="QueryAllStudentCount" parameterType="String" resultType="Integer">
+        select count(*) from student
+        <where>
+            <if test="Name!=null and Name!=''">name like concat ('%',#{Name},'%') </if>
+        </where>
+    </select>
+    <select id="QueryAllStudent" parameterType="Map" resultType="Student">
+        select * from student
+        <where>
+            <if test="Name!=null and Name!=''">name like concat ('%',#{Name},'%') </if>
+        </where>
+        limit #{start},#{end}
+    </select>
+    <delete id="DeleteStudents" >
+        delete from student where id in
+        <foreach collection="array" item="estateId"
+                 open="(" close=")" separator=",">
+            #{estateId}
+        </foreach>
+    </delete>
+    <select id="QueryStudentByName" parameterType="String" resultType="Student">
+        select * from student
+        <where>
+            <if test="Name!=null and Name!=''">name like concat ('%',#{Name},'%') </if>
+        </where>
+    </select>
+</mapper>
